@@ -46,10 +46,8 @@ def n_hist(it):
     return sum(1 for t in it.get("history") or [] if t["role"] == "user")
 
 
-CANCEL = r"(à |ơ |mà )?thôi(,| )+(khỏi|đừng|không|khoan|bỏ|để|kệ|dẹp)|thôi khỏi|khỏi cần|không cần nữa|bỏ đi|đừng .{0,20} nữa|huỷ lệnh|hủy lệnh|thôi nhé|thôi nha|thôi vậy"
-B = r"(?<![a-zà-ỹ])"  # ranh gioi tu (tranh khop "mà không" voi "à không")
-E = r"(?![a-zà-ỹ])"
-FIX = B + r"(à|ấy|ơ|ủa),? ?(nhầm|không|quên|khoan)" + E + "|" + B + r"nhầm(,| rồi)|ý (tôi|anh|chị|em|mình|tớ|cô|chú|bác|con) là|đổi lại|khoan đã|chứ không phải"
+from traps import B, CALC, CANCEL, DICT, E, FIX  # noqa: E402  (dinh nghia dung chung voi bo sinh du lieu)
+
 COND = B + "nếu" + E + r"|còn không thì|không thì thôi|mà .{0,25} thì "
 NUMCMP = B + "(đủ|dưới|trên|hơn|quá|thiếu|ít nhất|tối đa)" + E
 PH = collections.OrderedDict([
@@ -67,8 +65,8 @@ PH = collections.OrderedDict([
     ("tính giờ (trước/sau N phút, nửa tiếng, rưỡi)", R(r"(trước|sau|sớm hơn|muộn hơn|lùi|dời|thêm) .{0,25}(phút|tiếng|giờ)|nửa tiếng|tiếng nữa|phút nữa|\brưỡi\b|kém")),
     ("ngày tương đối xa (mốt, tuần sau, thứ…)", R(r"\bmốt\b|ngày kia|tuần sau|tuần tới|cuối tuần|thứ (hai|ba|tư|năm|sáu|bảy)|chủ nhật")),
     ("tiền / số đọc bằng chữ", R(r"(nghìn|ngàn|triệu|trăm|chục|\bk\b|đồng|\blít\b|ký|cân)")),
-    ("tính toán (chia, mỗi người, một nửa, tổng, gấp)", R(r"\bchia\b|mỗi người|một nửa|\btổng\b|gấp (đôi|ba)|cộng|\bnhân\b|trung bình|bao nhiêu (bước|lít|cây|tiền) .{0,20}thì")),
-    ("đọc chính tả (email 'a còng', số điện thoại đọc từng số)", R(r"a còng|chấm (com|vn|test|net)|không chín|không ba|không tám|không bảy")),
+    ("tính toán (chia, mỗi người, một nửa, tổng, gấp)", R(CALC)),
+    ("đọc chính tả (email 'a còng', số điện thoại đọc từng số)", R(DICT)),
     ("phương ngữ (răng, rứa, mô, chừ, nghen, hè, tê)", R(r"\brăng\b|\brứa\b|\bmô\b|\bchừ\b|nghen|\bhè\b|\btê\b|\bni\b|\bnớ\b|\bhỉ\b|\bhen\b|\bdùm\b|\bhông\b|\bvô\b|\bbả\b|\bổng\b|\bmạ\b")),
     ("câu dài (> 150 ký tự)", lambda it: len(it.get("audio_text", "")) > 150),
     ("câu rất ngắn (< 40 ký tự)", lambda it: len(it.get("audio_text", "")) < 40),

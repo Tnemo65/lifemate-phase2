@@ -25,6 +25,7 @@ import random
 import sys
 
 import teacher_env as te
+import traps
 from make_lc_splits import fam, kind
 
 SYN = te.RUNS / "syn"
@@ -49,6 +50,24 @@ TYPES = {
 KIND_W = {"E": 0.768, "A": 0.146, "O": 0.086}  # ti le gold TRAIN: lam / hoi lai / rong
 # so thao tac GHI trong mau LAM cua gold train_q50, theo ho du lieu (dot 1 sinh qua de: template chi 14% co >=2 ghi, gold 46%)
 N_WRITE = {"llm": {0: 0.16, 1: 0.57, 2: 0.22, 3: 0.05}, "tmpl": {0: 0.03, 1: 0.51, 2: 0.42, 3: 0.04}}
+# Bay gan them vao cau, ngoai loai cau. Chi gom bay ma lo thu (pilot) thieu so voi gold train_q50 (do bang traps.has):
+#   ma: (ti le gan, mo ta cho nguoi viet). Ti le = ti le trong gold; x2 khi model moc < 50 diem tren nua TRAIN chua hoc.
+#   fix 3.9% gold, 35.5 diem, pilot 0.5% | dict 1.8%, 27.5, 0.5% | calc 3.4%, 71.9, 0.9% | app3 12.8%, 57.0, 3.6%
+#   long 9.8%, 57.8, 1.8%. Khong gom "huy mot phan" (gold 3.5%, model 72.3, pilot da co 8.1%).
+TRAPS = {
+    "fix": (0.078, "TỰ SỬA LỜI: người dùng nói một giá trị (tên, giờ, số, loại...) rồi tự sửa ngay trong câu bằng \"à không\", "
+                   "\"à nhầm\" hoặc \"ý ... là\". Đáp án chỉ dùng giá trị nói SAU."),
+    "dict": (0.036, "ĐỌC CHÍNH TẢ: người dùng đọc số điện thoại từng chữ số bằng chữ (\"không chín một hai...\") hoặc đánh vần "
+                    "email (\"a còng\", \"chấm com\"). Tham số trong đáp án là chuỗi số / email viết liền, đúng từng ký tự."),
+    "calc": (0.034, "TÍNH TOÁN: một tham số số trong đáp án phải TÍNH ra (chia đều cho mỗi người, một nửa, gấp đôi, tổng, "
+                    "số lượng nhân đơn giá đọc từ tool). Câu nói không nêu sẵn kết quả."),
+    "app3": (0.128, "TỪ 3 APP: đáp án dùng tool của ít nhất 3 app khác nhau (tính cả lệnh đọc)."),
+    "long": (0.098, f"CÂU DÀI: câu nói dài hơn {traps.LONG_CHARS} ký tự, có bối cảnh và lý do đời thường, không thêm ý định mới."),
+}
+APP3_GIVEN_W2 = 0.43  # xac suat gan "app3" cho cau >= 2 thao tac ghi (khoang 25% so cau) -> tong gan 12.8% nhu gold
+DICT_PARAMS = {"contacts.update": ("phone", "email"), "phone.call": ("phone_number",), "sms.send": ("phone_number",),
+               "email.send": ("to",), "email.create_draft": ("to",), "ewallet.transfer": ("phone",),
+               "ewallet.topup_mobile": ("phone",)}  # tool nhan so dien thoai / email dang chu (khong qua ID)
 REF_MIN = 80  # cau mau qua ngan (vd "Ừ đặt đi") thi lay moc 80 ky tu (gold LAM: TB 99-110)
 MIN_LEN = {"E": 0.8, "A": 0.5, "O": 0.5}  # do dai cau moi / cau mau cung base (dot 1: trung vi 0.68 -> ngan hon gold)
 
@@ -71,6 +90,32 @@ def assign_types(base_id, has_history, family="llm", n=3):
         else:
             fl = rng.choice([("E1" if w == 1 else "E2"), "E3", "E4"] + (["E5"] if has_history else []))
         out.append(f"{fl}w{w}")
+    return out
+
+
+def assign_traps(base_id, types, item):
+    """Moi cau nhan toi da 1 bay, do code gan theo TRAPS (rng rieng: khong doi loai cau da gan cho cac base cu).
+    Bay khong lam duoc voi loai cau hoac app cua base -> '' (khong ep nguoi viet)."""
+    inst = item["context"]["installed_apps"]
+    apps = set(inst) - HELD_OUT
+    names = {t for a in apps for t in inst[a]["tools"]}
+    out = []
+    for k, code in enumerate(types, 1):
+        rng = random.Random(f"{base_id}|trap1|{k}")
+        r, r3, acc, pick = rng.random(), rng.random(), 0.0, ""
+        w = int(code.split("w")[1]) if "w" in code else -1  # -1: HOI LAI / RONG
+        if w >= 2 and len(apps) >= 3 and r3 < APP3_GIVEN_W2:  # chi cau >= 2 thao tac ghi moi trai duoc 3 app
+            out.append("app3")
+            continue
+        for name, (p, _) in TRAPS.items():
+            if name == "app3":
+                continue
+            acc += p
+            if r < acc:
+                pick = name
+                break
+        ok = {"fix": w >= 0, "dict": w >= 1 and bool(names & set(DICT_PARAMS)), "calc": w >= 1, "long": True}
+        out.append(pick if pick and ok[pick] else "")
     return out
 
 
@@ -116,8 +161,11 @@ def card(base_id):
     types = assign_types(base_id, bool(it.get("history")), fam(it))
     print("\n=== NHIỆM VỤ CỦA NGƯỜI VIẾT ===")
     print("Lượt user CUỐI ở trên chỉ là mẫu GIỌNG VĂN. Hãy viết 3 câu nói MỚI của chính người dùng này, nối tiếp cùng history, mỗi câu một loại:")
+    trs = assign_traps(base_id, types, it)
     for k, t in enumerate(types, 1):
         print(f"  Câu {k} — loại {t}: {describe(t)}")
+        if trs[k - 1]:
+            print(f"      + BẪY phải có trong câu {k} — {TRAPS[trs[k - 1]][1]}")
     print("Yêu cầu: giọng văn nói tự nhiên như các lượt user ở trên (xưng hô, phương ngữ, số đọc bằng chữ nếu họ nói vậy); "
           "ý định KHÁC câu mẫu và khác nhau; chỉ dùng dữ liệu có thật ở trên; đáp án phải xác định duy nhất theo quy ước.")
     n = max(len(it["audio_text"]), REF_MIN)
@@ -131,12 +179,15 @@ def write(base_id, k, text):
     it = te._load_items("train")[base_id]
     types = assign_types(base_id, bool(it.get("history")), fam(it))
     need = round(MIN_LEN[types[int(k) - 1][0]] * max(len(it["audio_text"]), REF_MIN))
+    trap = assign_traps(base_id, types, it)[int(k) - 1]
+    if trap == "long":
+        need = max(need, traps.LONG_CHARS + 1)
     if len(text.strip()) < need:
         print(f"CHƯA LƯU: câu dài {len(text.strip())} ký tự, cần ít nhất {need}. Viết lại cho giống độ dài/giọng câu mẫu.")
         return
     SYN.mkdir(parents=True, exist_ok=True)
     qid = f"{base_id}-{k}"
-    json.dump({"base": base_id, "k": int(k), "type": types[int(k) - 1], "text": text.strip()},
+    json.dump({"base": base_id, "k": int(k), "type": types[int(k) - 1], "trap": trap, "text": text.strip()},
               open(SYN / f"{qid}.req.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"đã lưu {qid} ({types[int(k) - 1]})")
 
@@ -203,7 +254,7 @@ def collect(name):
     items = te._load_items("train")
     sp = json.load(open(te.ROOT / "artifacts" / "splits3.json", encoding="utf-8"))
     always_empty = _always_empty_reads(T, items, sp[POOL])
-    rows, why = [], collections.Counter()
+    rows, why, asked = [], collections.Counter(), collections.Counter()
     for rp in sorted(SYN.glob("*.req.json")):
         req = json.load(open(rp, encoding="utf-8"))
         qid = f"{req['base']}-{req['k']}"
@@ -247,8 +298,11 @@ def collect(name):
                 why["sai số thao tác ghi so với đề"] += 1
                 continue
         it = {k: v for k, v in base.items() if k != "label"}
+        trap = req.get("trap", "")  # bay duoc giao; chi ghi nhan khi cau + dap an that su mang bay do (khong loai mau)
+        asked[trap] += 1
+        got_trap = trap if trap and traps.has(trap, req["text"], s["tool_calls"]) else ""
         it.update(id=f"syn_{req['base'].split('_')[1]}_{req['k']}", base_id=req["base"], audio_text=req["text"],
-                  syn_type=req["type"], label={"tool_calls": s["tool_calls"], "tool_results": results})
+                  syn_type=req["type"], syn_trap=got_trap, label={"tool_calls": s["tool_calls"], "tool_results": results})
         rows.append(it)
     out = te.ROOT / "artifacts" / f"synth_{name}.jsonl"
     with open(out, "w", encoding="utf-8") as f:
@@ -258,6 +312,9 @@ def collect(name):
     print(f"câu đã viết: {n_req} | giữ: {len(rows)} ({100 * len(rows) / max(n_req, 1):.0f}%) -> {out.name}")
     print("lý do loại:", dict(why.most_common()))
     print("loại câu giữ lại:", dict(collections.Counter(r["syn_type"] for r in rows).most_common()))
+    print("bẫy trong mẫu giữ lại (giao → đạt):", {t: f"{asked[t]} → {sum(1 for r in rows if r['syn_trap'] == t)}" for t in TRAPS})
+    print("bẫy đo trên mọi mẫu giữ lại (%):", {t: round(100 * sum(traps.has(t, r["audio_text"], r["label"]["tool_calls"])
+                                                                  for r in rows) / max(len(rows), 1), 1) for t in traps.ALL})
     print("họ của base:", dict(collections.Counter(fam(items[r["base_id"]]) for r in rows)))
 
 

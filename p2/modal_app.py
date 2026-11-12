@@ -6,6 +6,10 @@
 
 Model luu tren Volume 'lifemate-models' (tai 1 lan). Du lieu (khong audio) + code gan vao container.
 Ket qua ghi ve may: p2/runs/<tag>/ (predictions.jsonl, traces.jsonl, score.json).
+
+Bien the context (--ctx): mac dinh "auto" = doc lai tu /ckpt/<model>/train_info.json, de eval luon cung bien the
+voi luc train (ban cu khong co truong nay -> mac dinh p1). Voi model goc: --ctx p2+kind de A/B prompt zero-shot.
+--base <HF id>: model goc khac (tai ve Volume lan dau); ban SFT tu doc model goc tu train_info.json. CHUA chay thu.
 """
 from __future__ import annotations
 
@@ -39,21 +43,29 @@ app = modal.App("lifemate-p2", image=image)
 
 
 @app.function(volumes={"/models": models}, timeout=1800)
-def download_model():
+def download_model(model_id: str = MODEL_ID):
     import os
     from huggingface_hub import snapshot_download
-    if os.path.exists(f"{MODEL_DIR}/config.json"):
+    model_dir = f"/models/{model_id.split('/')[-1]}"
+    if os.path.exists(f"{model_dir}/config.json"):
         return "da co san"
-    snapshot_download(MODEL_ID, local_dir=MODEL_DIR, token=os.environ.get("HF_TOKEN"))
+    snapshot_download(model_id, local_dir=model_dir, token=os.environ.get("HF_TOKEN"))
     models.commit()
     return "tai xong"
 
 
 @app.function(gpu=GPU, volumes={"/models": models, "/ckpt": ckpt}, timeout=3600)
-def run_eval(split: str, limit: int = 0, model: str = "base", prefix_cache: bool = False, max_seqs: int = 8):
+def run_eval(split: str, limit: int = 0, model: str = "base", prefix_cache: bool = False, max_seqs: int = 8,
+             ctx: str = "auto", base: str = ""):
     """model = 'base' (Qwen goc) hoac ten run SFT (vd 'sft_v1' -> /ckpt/sft_v1/merged)."""
+    import os
     import random
     import sys
+    info = {}
+    if model != "base" and os.path.exists(f"/ckpt/{model}/train_info.json"):
+        info = json.load(open(f"/ckpt/{model}/train_info.json"))
+    base = base or info.get("base", "")  # ten thu muc model goc trong /models
+    MODEL_DIR = f"/models/{base}" if base else globals()["MODEL_DIR"]
     model_dir = MODEL_DIR if model == "base" else f"/ckpt/{model}/merged"
 
     import numpy as np
@@ -68,6 +80,8 @@ def run_eval(split: str, limit: int = 0, model: str = "base", prefix_cache: bool
     import scorer
 
     random.seed(0); np.random.seed(0); torch.manual_seed(0)
+    ctx = agent.set_ctx(info.get("ctx", "") if ctx == "auto" else ctx)
+    print("ctx =", repr(ctx), "| model goc =", MODEL_DIR)
 
     public = split == "public_test"  # khong co nhan: dung transcript ASR, khong cham
     src = "public_test" if public else "train"
@@ -129,6 +143,7 @@ def run_eval(split: str, limit: int = 0, model: str = "base", prefix_cache: bool
     else:
         r = scorer.score(preds, {i["id"]: i for i in batch_items}, gh, tools)
     return {"model": model, "split": split, "gpu": stats_gpu, "prefix_cache": prefix_cache, "max_seqs": max_seqs,
+            "ctx": ctx, "base": base,
             "n": r["n"], "score": r["score"], "per_sample": r["per_sample"],
             "preds": {i: {"tool_calls": p["tool_calls"], "state_hash": p["state_hash"]} for i, p in preds.items()},
             "traces": {i: p["trace"] for i, p in preds.items()},
@@ -138,13 +153,13 @@ def run_eval(split: str, limit: int = 0, model: str = "base", prefix_cache: bool
 
 @app.local_entrypoint()
 def main(split: str = "dev", limit: int = 0, tag: str = "", model: str = "base",
-         gpu: str = "", prefix_cache: bool = False, max_seqs: int = 8):
+         gpu: str = "", prefix_cache: bool = False, max_seqs: int = 8, ctx: str = "auto", base: str = ""):
     if split == "final_test":
         print("CANH BAO: final_test chi chay 1 lan cuoi cung!")
     tag = tag or ("baseline_zeroshot" if model == "base" else model)
-    print(download_model.remote())
+    print(download_model.remote(base or MODEL_ID))
     fn = run_eval.with_options(gpu=gpu) if gpu else run_eval
-    res = fn.remote(split, limit, model, prefix_cache, max_seqs)
+    res = fn.remote(split, limit, model, prefix_cache, max_seqs, ctx, base.split("/")[-1])
     out = ROOT / "runs" / f"{tag}_{split}{'_n' + str(limit) if limit else ''}"
     out.mkdir(parents=True, exist_ok=True)
     with open(out / "predictions.jsonl", "w", encoding="utf-8") as f:
