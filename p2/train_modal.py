@@ -4,6 +4,12 @@
     python -m modal run train_modal.py --tag sft_v1       # B2: train du 2 epoch, merge, luu vao Volume lifemate-ckpt
 
 Truoc khi train: tokenize lai tren Modal va so sha256 voi ban local (artifacts/sft_train.stats.json). Lech -> dung.
+
+Tuy chon them (mac dinh tat -> giong het ban cu). Chay sft_data.py voi CUNG tuy chon truoc de co file stats:
+    --ctx p2+kind+compact   bien the context (agent.set_ctx); duoc ghi vao train_info.json, eval tu doc lai
+    --mask-epochs 4         chon lai mau doi ten moi "epoch" (du lieu x4, train 1 epoch; bo qua --epochs)
+    --boost llm:2           lap 2 lan mau ho hoi thoai
+    --base <ten thu muc>    model goc khac trong Volume lifemate-models (CHUA chay thu)
 """
 from __future__ import annotations
 
@@ -34,7 +40,8 @@ TARGETS = ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down
 
 
 @app.function(gpu=["A100-80GB", "H100"], volumes={"/models": models, "/ckpt": ckpt}, timeout=4 * 3600)
-def train(tag: str, dry_run: bool, splits: str = "train", mask: float = 0.0, epochs: int = 0, synth: str = ""):
+def train(tag: str, dry_run: bool, splits: str = "train", mask: float = 0.0, epochs: int = 0, synth: str = "",
+          ctx: str = "", mask_epochs: int = 0, boost: str = "", base: str = ""):
     import random
     import sys
 
@@ -44,15 +51,21 @@ def train(tag: str, dry_run: bool, splits: str = "train", mask: float = 0.0, epo
     from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
 
     sys.path.insert(0, "/root/p2")
+    import agent
     import sft_data
 
-    HP = dict(globals()["HP"], epochs=epochs or globals()["HP"]["epochs"])  # epochs > 0: ghi de (duong cong hoc)
+    MODEL_DIR = f"/models/{base}" if base else globals()["MODEL_DIR"]
+    ctx = agent.set_ctx(ctx)  # ten chuan; train va eval phai cung bien the
+    # epochs > 0: ghi de (duong cong hoc). mask_epochs > 0: du lieu da gom mask_epochs ban -> train 1 epoch.
+    HP = dict(globals()["HP"], epochs=1 if mask_epochs else (epochs or globals()["HP"]["epochs"]))
     random.seed(HP["seed"]); np.random.seed(HP["seed"]); torch.manual_seed(HP["seed"])
 
     # 1) kiem tokenizer tren Modal == local
     names = splits.split(",")
-    local_stats = json.load(open(f"/root/p2/artifacts/sft_{sft_data.data_name(names, mask, synth)}.stats.json"))
-    rows, stats = sft_data.build(names, MODEL_DIR, "/data", check_replay=False, verbose=False, mask_ratio=mask, synth=synth)
+    name = sft_data.data_name(names, mask, synth, ctx, mask_epochs, boost)
+    local_stats = json.load(open(f"/root/p2/artifacts/sft_{name}.stats.json"))
+    rows, stats = sft_data.build(names, MODEL_DIR, "/data", check_replay=False, verbose=False, mask_ratio=mask,
+                                 synth=synth, ctx=ctx, mask_epochs=mask_epochs, boost=boost)
     if stats["sha256"] != local_stats["sha256"]:
         raise RuntimeError(f"Du lieu tokenize tren Modal KHAC local: {stats['sha256']} != {local_stats['sha256']}")
     print("tokenize khop local:", stats["sha256"][:16], "n =", stats["n"])
@@ -103,7 +116,8 @@ def train(tag: str, dry_run: bool, splits: str = "train", mask: float = 0.0, epo
     info = {"tag": tag, "dry_run": dry_run, "gpu": torch.cuda.get_device_name(0),
             "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 1e9, 1),
             "train_s": round(dt, 1), "tokens": n_tok, "tok_per_s": round(n_tok / dt),
-            "metrics": res.metrics, "hp": HP, "data_sha": stats["sha256"],
+            "metrics": res.metrics, "hp": HP, "data_sha": stats["sha256"], "data": name,
+            "ctx": ctx, "base": base, "mask": mask, "mask_epochs": mask_epochs, "boost": boost, "synth": synth,
             "loss_log": [(h.get("step"), round(h["loss"], 4)) for h in trainer.state.log_history if "loss" in h]}
     if not dry_run:
         full_tok = stats["tokens_total"] * HP["epochs"]
@@ -123,8 +137,8 @@ def train(tag: str, dry_run: bool, splits: str = "train", mask: float = 0.0, epo
 
 @app.local_entrypoint()
 def main(tag: str = "sft_v1", dry_run: bool = False, splits: str = "train", mask: float = 0.0, epochs: int = 0,
-         synth: str = ""):
-    info = train.remote(tag, dry_run, splits, mask, epochs, synth)
+         synth: str = "", ctx: str = "", mask_epochs: int = 0, boost: str = "", base: str = ""):
+    info = train.remote(tag, dry_run, splits, mask, epochs, synth, ctx, mask_epochs, boost, base)
     out = ROOT / "runs" / (f"{tag}_dryrun" if dry_run else tag)
     out.mkdir(parents=True, exist_ok=True)
     json.dump(info, open(out / "train_info.json", "w"), indent=1)

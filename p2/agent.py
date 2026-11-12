@@ -8,6 +8,10 @@ Khong co guard. Chi 2 quy uoc toi thieu cua giao thuc:
   - sau sys.ask_missing_info thi dung (luot nay ket thuc, cho nguoi dung tra loi);
   - toi da MAX_STEPS luot sinh cua model.
 Luc inference chi dung env.call / get_tool_calls / get_state_hash (dung luat BTC).
+
+Bien the context (set_ctx): mac dinh = dung ban da train (prompt p1, schema goc, ket qua tool dang JSON).
+Cac muc tuy chon, bat rieng tung muc de A/B: 'p2' (them quy uoc vao system prompt), 'kind' (nhan [ĐỌC]/[GHI]
++ 'Trả về' trong mo ta tool), 'compact' (ket qua tool dang dong key=value). Train va inference PHAI cung bien the.
 """
 from __future__ import annotations
 
@@ -54,6 +58,46 @@ Ngữ cảnh người dùng:
 Mốc ngày (tính từ current_time):
 {dates}"""
 
+# Quy uoc chung cua gold (do tren TRAIN, xem MASTER_PLAN.md 2.5). Chi gom luat KHONG phu thuoc app cu the.
+P2_RULES = """
+Quy ước của đáp án (làm đúng từng điều):
+- Chỉ gọi tool đọc khi cần ID cho bước ghi, cần kiểm tra điều kiện, hoặc người dùng hỏi thông tin. Không đọc thêm cho chắc.
+- ID chưa xuất hiện trong hội thoại: gọi tool đọc trả về nó trước rồi mới ghi. ID đã có ở lượt trước: dùng luôn, không đọc lại.
+- Sau khi đọc: đúng 1 kết quả khớp thì làm luôn, không hỏi. Từ 2 kết quả khớp trở lên mà câu nói không đủ để chọn thì gọi sys.ask_missing_info rồi dừng.
+- Câu có điều kiện ("nếu ... thì ..."): đọc để kiểm tra trước. Chỉ làm vế có điều kiện đúng.
+- Tham số tuỳ chọn chỉ điền khi người dùng nói rõ.
+- Người dùng tự sửa lời ("à không", "à nhầm") thì dùng giá trị nói sau. Người dùng huỷ một việc thì bỏ việc đó, vẫn làm các việc còn lại. Huỷ hết hoặc chỉ tán gẫu thì không gọi tool nào."""
+_P2_ANCHOR = "\n\nNgữ cảnh người dùng:"
+
+CTX = {"prompt": "p1", "kind": False, "results": "json"}
+_CTX_TOKENS = {"p2": ("prompt", "p2"), "kind": ("kind", True), "compact": ("results", "compact")}
+
+
+def ctx_name() -> str:
+    """Ten chuan cua bien the dang bat, thu tu co dinh, vd 'p2+kind+compact'; '' = mac dinh."""
+    return "+".join(t for t, (k, v) in _CTX_TOKENS.items() if CTX[k] == v)
+
+
+def set_ctx(spec: str = "") -> str:
+    """spec: '' (mac dinh) hoac cac muc noi bang '+', vd 'p2+kind'. Dat lai tu dau moi lan goi. Tra ve ten chuan."""
+    CTX.update(prompt="p1", kind=False, results="json")
+    for part in (spec or "").split("+"):
+        if not part:
+            continue
+        if part not in _CTX_TOKENS:
+            raise ValueError(f"ctx khong hop le: {part!r} (chon trong {sorted(_CTX_TOKENS)})")
+        k, v = _CTX_TOKENS[part]
+        CTX[k] = v
+    return ctx_name()
+
+
+def system_prompt(context: str, dates: str) -> str:
+    s = SYSTEM_PROMPT.format(context=context, dates=dates)
+    if CTX["prompt"] == "p2":  # chen sau khi format: P2_RULES khong di qua str.format
+        assert s.count(_P2_ANCHOR) >= 1
+        s = s.replace(_P2_ANCHOR, P2_RULES + _P2_ANCHOR, 1)
+    return s
+
 WEEKDAYS = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
 SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
 STOP_DONE = "Đã xong."
@@ -76,6 +120,9 @@ def tool_index(catalog: dict) -> dict[str, dict]:
     return {t["name"]: t for a in catalog["apps"] for t in a["tools"]}
 
 
+_KIND_LABEL = {"read": "[ĐỌC] ", "write": "[GHI] "}
+
+
 def tools_for(item: dict, tools: dict[str, dict]) -> list[dict]:
     out = []
     for app in item["context"]["installed_apps"].values():
@@ -83,15 +130,51 @@ def tools_for(item: dict, tools: dict[str, dict]) -> list[dict]:
             t = tools.get(name)
             if t is None:
                 continue
+            desc = t.get("description", "")
+            if CTX["kind"]:  # catalog co san kind + returns; ban mac dinh bo qua 2 truong nay
+                desc = _KIND_LABEL.get(t.get("kind"), "") + desc + (f" Trả về: {t['returns']}." if t.get("returns") else "")
             out.append({"type": "function", "function": {
-                "name": t["name"], "description": t.get("description", ""),
+                "name": t["name"], "description": desc,
                 "parameters": t.get("parameters", {"type": "object", "properties": {}})}})
     out.append(ASK_TOOL)
     return out
 
 
+def _flat(v) -> str:
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if v is None:
+        return "null"
+    if isinstance(v, str):
+        return v
+    if isinstance(v, (int, float)):
+        return json.dumps(v)
+    return json.dumps(v, ensure_ascii=False, separators=(",", ":"))  # list / dict long ben trong: giu JSON
+
+
+def _row(d: dict) -> str:
+    return " | ".join(f"{k}={_flat(v)}" for k, v in d.items())
+
+
+def compact_result(x) -> str:
+    """Ket qua tool dang dong: truong don o dong dau, moi ban ghi cua danh sach 1 dong danh so, khong bo gia tri nao.
+    vd: ok=true / contacts (2): / 1. id=c_02 | name=Hương | ... -> de dem so ket qua va chon dung ban ghi."""
+    if not isinstance(x, dict):
+        return json.dumps(x, ensure_ascii=False)
+    head, lines = [], []
+    for k, v in x.items():
+        if isinstance(v, list) and all(isinstance(e, dict) for e in v):
+            lines.append(f"{k} ({len(v)}):" if v else f"{k} (0)")
+            lines += [f"{j}. {_row(e)}" for j, e in enumerate(v, 1)]
+        elif isinstance(v, dict):
+            lines.append(f"{k}: {_row(v)}")
+        else:
+            head.append(f"{k}={_flat(v)}")
+    return "\n".join(([" | ".join(head)] if head else []) + lines)
+
+
 def _dumps(x) -> str:
-    s = json.dumps(x, ensure_ascii=False)
+    s = compact_result(x) if CTX["results"] == "compact" else json.dumps(x, ensure_ascii=False)
     return s if len(s) <= MAX_RESULT_CHARS else s[:MAX_RESULT_CHARS] + "...(cắt bớt)"
 
 
@@ -102,8 +185,8 @@ def _tc(call: dict) -> dict:
 def build_messages(item: dict, texts: dict[str, str]) -> list[dict]:
     """texts: map duong dan audio -> text user (gold audio_text hoac transcript ASR)."""
     ctx = {k: v for k, v in item["context"].items() if k != "installed_apps"}
-    msgs = [{"role": "system", "content": SYSTEM_PROMPT.format(
-        context=json.dumps(ctx, ensure_ascii=False, indent=1), dates=date_table(ctx["current_time"]))}]
+    msgs = [{"role": "system", "content": system_prompt(
+        json.dumps(ctx, ensure_ascii=False, indent=1), date_table(ctx["current_time"]))}]
     for turn in item.get("history") or []:
         if turn["role"] == "user":
             msgs.append({"role": "user", "content": texts.get(turn.get("audio", ""), "")})

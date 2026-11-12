@@ -1,0 +1,24 @@
+{
+ "splits": [
+  "train_q50"
+ ],
+ "synth": "",
+ "mask_ratio": 0.3,
+ "n_masked": 169,
+ "ctx": "p2+kind+compact",
+ "mask_epochs": 0,
+ "boost": "",
+ "n": 563,
+ "dropped_too_long": [
+  "train_0261"
+ ],
+ "tokens_total": 3374128,
+ "len_p50": 5935,
+ "len_p95": 8572,
+ "len_max": 9967,
+ "target_tokens_total": 49865,
+ "target_p50": 88,
+ "target_max": 258,
+ "mean_len": 5993.1,
+ "sha256": "0379c018e69e62b0ab4fd6f62846e0dc254ab49418ccda645f0e7844c05f3073"
+}

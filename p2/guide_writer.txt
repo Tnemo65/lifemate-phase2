@@ -36,6 +36,9 @@ Writing rules
 - E3 (conditional): the condition must be checkable by a read tool on the real data; follow the assigned outcome (true / false).
 - E4 (criterion / several objects): the selected set must be unique from the real data (no ties, data really contains the criterion).
 - O3: ask for something no installed tool can do.  O4: ask again for information already present in history.
+- "+ BẪY" line under a request: the request must also contain that trap, in addition to its type. The answer must stay
+  unique (self-correction: use the value said LAST; dictation: the argument is the exact digits / email; computation: the
+  request must not state the result). If the trap is impossible with the real data, write the request without it.
 - Obey any "KHÔNG dùng các app" line in the card.
 - If an assigned type is impossible for this base, write the closest feasible request of the same family (LÀM / HỎI LẠI / RỖNG)
   with the same number of write actions.
