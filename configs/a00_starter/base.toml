@@ -1,0 +1,9 @@
+# Empty model: a working no-action Agent, with no model download or inference.
+# To use your own endpoint, set model and add pinned weight_references for it.
+# Export OPENAI_API_KEY in the Run environment if the endpoint needs a credential.
+[llm]
+model = ""
+base_url = "http://127.0.0.1:8000/v1"
+max_context = 16384
+max_tokens = 128
+timeout = 25

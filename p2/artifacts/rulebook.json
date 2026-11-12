@@ -1,0 +1,690 @@
+{
+ "xref_read_before_write": {
+  "calendar.update_event.event_id": {
+   "read_truoc": 22,
+   "id_trong_history": 1
+  },
+  "sms.send.contact_id": {
+   "read_truoc": 56,
+   "id_trong_history": 2
+  },
+  "smart_home.light_set.device_id": {
+   "read_truoc": 101,
+   "id_trong_history": 12
+  },
+  "bill_payment.pay.bill_id": {
+   "read_truoc": 88,
+   "id_trong_history": 8
+  },
+  "banking.transfer.from_account_id": {
+   "read_truoc": 71,
+   "id_trong_history": 2
+  },
+  "banking.transfer.beneficiary_id": {
+   "read_truoc": 70,
+   "id_trong_history": 3
+  },
+  "phone.call.contact_id": {
+   "read_truoc": 6,
+   "id_trong_history": 7
+  },
+  "calendar.cancel_event.event_id": {
+   "read_truoc": 16,
+   "id_trong_history": 4
+  },
+  "chat_ott.send_message.chat_id": {
+   "read_truoc": 41,
+   "id_trong_history": 14
+  },
+  "ewallet.transfer.contact_id": {
+   "read_truoc": 22,
+   "id_trong_history": 3
+  },
+  "smart_home.climate_set.device_id": {
+   "read_truoc": 32,
+   "id_trong_history": 3
+  },
+  "food_delivery.place_order.restaurant_id": {
+   "read_truoc": 19,
+   "id_trong_history": 3
+  },
+  "alarm.update.alarm_id": {
+   "id_trong_history": 3
+  },
+  "subscriptions.cancel.subscription_id": {
+   "read_truoc": 12,
+   "id_trong_history": 15
+  },
+  "door_lock.set_lock.lock_id": {
+   "read_truoc": 18,
+   "id_trong_history": 6
+  },
+  "appliances.start_cycle.appliance_id": {
+   "read_truoc": 8,
+   "id_trong_history": 7
+  },
+  "household_chores.assign.chore_id": {
+   "read_truoc": 16,
+   "id_trong_history": 9
+  },
+  "flights.book.flight_id": {
+   "id_trong_history": 10,
+   "read_truoc": 5
+  },
+  "contacts.update.contact_id": {
+   "read_truoc": 4,
+   "id_trong_history": 5
+  },
+  "home_automation.create_rule.device_id": {
+   "read_truoc": 14,
+   "id_trong_history": 4
+  },
+  "library.reserve.book_id": {
+   "read_truoc": 10,
+   "id_trong_history": 8
+  },
+  "music.play.track_id": {
+   "id_trong_history": 4,
+   "read_truoc": 3
+  },
+  "home_security.acknowledge_alert.alert_id": {
+   "id_trong_history": 8,
+   "read_truoc": 5
+  },
+  "notes.append.note_id": {
+   "read_truoc": 2,
+   "id_trong_history": 3
+  },
+  "smart_home.fan_set.device_id": {
+   "id_trong_history": 3,
+   "read_truoc": 4
+  },
+  "home_automation.delete_rule.rule_id": {
+   "read_truoc": 9,
+   "id_trong_history": 5
+  },
+  "medication.log_taken.schedule_id": {
+   "read_truoc": 4,
+   "id_trong_history": 5
+  },
+  "music.add_to_playlist.track_id": {
+   "read_truoc": 1,
+   "id_trong_history": 1
+  },
+  "music.add_to_playlist.playlist_id": {
+   "read_truoc": 1,
+   "id_trong_history": 1
+  },
+  "reminders.delete.reminder_id": {
+   "read_truoc": 1
+  },
+  "smart_home.scene_run.scene_id": {
+   "id_trong_history": 1
+  },
+  "shopping_list.check.item_id": {
+   "read_truoc": 4,
+   "id_trong_history": 3
+  },
+  "medication.remove.schedule_id": {
+   "read_truoc": 2,
+   "id_trong_history": 2
+  },
+  "door_lock.grant_guest_code.lock_id": {
+   "read_truoc": 4,
+   "id_trong_history": 3
+  },
+  "smart_home.switch_set.device_id": {
+   "read_truoc": 3,
+   "id_trong_history": 1
+  },
+  "flights.check_in.booking_id": {
+   "read_truoc": 4,
+   "id_trong_history": 2
+  },
+  "ride_hailing.cancel.ride_id": {
+   "khong_ca_hai": 2,
+   "id_trong_history": 4
+  },
+  "appliances.stop.appliance_id": {
+   "read_truoc": 3,
+   "id_trong_history": 2
+  },
+  "news.save.article_id": {
+   "read_truoc": 4,
+   "id_trong_history": 2
+  },
+  "email.archive.email_id": {
+   "id_trong_history": 4,
+   "read_truoc": 3
+  },
+  "maps.save_place.place_id": {
+   "id_trong_history": 4,
+   "read_truoc": 4
+  },
+  "tasks.complete.task_id": {
+   "read_truoc": 7,
+   "id_trong_history": 5
+  },
+  "tv.record.program_id": {
+   "read_truoc": 2,
+   "id_trong_history": 3
+  },
+  "shopping_list.remove.item_id": {
+   "read_truoc": 3,
+   "id_trong_history": 1
+  },
+  "chat_ott.call.chat_id": {
+   "id_trong_history": 2,
+   "read_truoc": 1
+  },
+  "flights.cancel.booking_id": {
+   "read_truoc": 1,
+   "id_trong_history": 3
+  },
+  "chat_ott.send_location.chat_id": {
+   "read_truoc": 3,
+   "id_trong_history": 1
+  },
+  "reminders.complete.reminder_id": {
+   "id_trong_history": 1
+  },
+  "food_delivery.cancel_order.order_id": {
+   "read_truoc": 2,
+   "id_trong_history": 1
+  },
+  "email.reply.email_id": {
+   "id_trong_history": 2
+  },
+  "banking.open_savings.from_account_id": {
+   "read_truoc": 2,
+   "id_trong_history": 2
+  },
+  "music.play.playlist_id": {
+   "id_trong_history": 2
+  },
+  "alarm.delete.alarm_id": {
+   "id_trong_history": 1
+  }
+ },
+ "precheck": {
+  "smart_home.get_status -> smart_home.light_set": [
+   101,
+   113
+  ],
+  "bill_payment.list_bills -> bill_payment.pay": [
+   88,
+   96
+  ],
+  "banking.get_balance -> banking.transfer": [
+   71,
+   73
+  ],
+  "banking.list_beneficiaries -> banking.transfer": [
+   70,
+   73
+  ],
+  "contacts.search -> sms.send": [
+   56,
+   62
+  ],
+  "smart_home.get_status -> smart_home.climate_set": [
+   32,
+   35
+  ],
+  "contacts.search -> ewallet.transfer": [
+   22,
+   26
+  ],
+  "calendar.list_events -> calendar.update_event": [
+   22,
+   23
+  ],
+  "food_delivery.list_restaurants -> food_delivery.place_order": [
+   19,
+   22
+  ],
+  "food_delivery.get_menu -> food_delivery.place_order": [
+   19,
+   22
+  ],
+  "calendar.list_events -> calendar.cancel_event": [
+   16,
+   20
+  ],
+  "contacts.search -> ewallet.topup_mobile": [
+   7,
+   8
+  ]
+ },
+ "keysets": {
+  "weather.get_forecast": {
+   "date": 45,
+   "date,location": 4
+  },
+  "calendar.list_events": {
+   "": 69,
+   "date_from,date_to": 11
+  },
+  "calendar.update_event": {
+   "end,event_id,start": 23
+  },
+  "contacts.search": {
+   "query": 174,
+   "": 18
+  },
+  "sms.send": {
+   "contact_id,content": 58,
+   "content,phone_number": 4
+  },
+  "smart_home.get_status": {
+   "": 82,
+   "room": 7,
+   "type": 3,
+   "floor,type": 1,
+   "floor": 1
+  },
+  "smart_home.light_set": {
+   "device_id,power": 88,
+   "brightness,device_id,power": 16,
+   "brightness,device_id": 9
+  },
+  "ride_hailing.book": {
+   "dropoff,pickup,schedule_time,vehicle": 30,
+   "dropoff,pickup,vehicle": 9,
+   "dropoff,payment,pickup,vehicle": 1
+  },
+  "gold_price.get_price": {
+   "type": 25
+  },
+  "ewallet.topup_mobile": {
+   "amount,phone": 8
+  },
+  "bill_payment.list_bills": {
+   "": 103
+  },
+  "ewallet.get_balance": {
+   "": 37
+  },
+  "bill_payment.pay": {
+   "bill_id,source": 96
+  },
+  "reminders.create": {
+   "content,time": 81
+  },
+  "banking.get_balance": {
+   "": 54
+  },
+  "banking.list_beneficiaries": {
+   "": 50
+  },
+  "banking.transfer": {
+   "amount,beneficiary_id,from_account_id": 73
+  },
+  "tv.guide": {
+   "": 2,
+   "channel": 2,
+   "date": 1
+  },
+  "tv.tune": {
+   "channel": 2
+  },
+  "phone.call": {
+   "contact_id": 13,
+   "phone_number": 13
+  },
+  "calendar.cancel_event": {
+   "event_id": 20
+  },
+  "sys.ask_missing_info": {
+   "params,tool_name": 164
+  },
+  "alarm.create": {
+   "time": 64,
+   "label,time": 1
+  },
+  "chat_ott.list_chats": {
+   "": 74
+  },
+  "chat_ott.send_message": {
+   "chat_id,content": 55
+  },
+  "ewallet.transfer": {
+   "amount,contact_id": 23,
+   "amount,contact_id,note": 2,
+   "amount,phone": 1
+  },
+  "smart_home.climate_set": {
+   "device_id,mode,temperature": 32,
+   "device_id,mode": 3
+  },
+  "food_delivery.list_restaurants": {
+   "": 21
+  },
+  "food_delivery.get_menu": {
+   "restaurant_id": 19
+  },
+  "food_delivery.place_order": {
+   "items,restaurant_id": 20,
+   "address,items,restaurant_id": 1,
+   "items,payment,restaurant_id": 1
+  },
+  "alarm.update": {
+   "alarm_id,time": 3
+  },
+  "medication.add": {
+   "name,times": 2,
+   "days,name,times": 1
+  },
+  "weather.get_current": {
+   "": 13,
+   "location": 1
+  },
+  "calculator.convert_unit": {
+   "from_unit,to_unit,value": 10
+  },
+  "shopping_list.add": {
+   "name,quantity": 10,
+   "name": 2
+  },
+  "news.search": {
+   "query": 13
+  },
+  "maps.search_place": {
+   "query": 8,
+   "near,query": 5
+  },
+  "maps.get_route": {
+   "destination,origin": 9,
+   "destination,mode,origin": 6
+  },
+  "subscriptions.list": {
+   "": 14
+  },
+  "subscriptions.cancel": {
+   "subscription_id": 27
+  },
+  "email.create_draft": {
+   "body,subject,to": 19
+  },
+  "home_security.list_alerts": {
+   "": 21,
+   "since": 1
+  },
+  "door_lock.list_locks": {
+   "": 22
+  },
+  "door_lock.set_lock": {
+   "lock_id,locked": 24
+  },
+  "appliances.list": {
+   "": 14,
+   "type": 1
+  },
+  "appliances.start_cycle": {
+   "appliance_id,cycle": 12,
+   "appliance_id,cycle,delay_minutes": 3
+  },
+  "household_chores.list_chores": {
+   "": 16
+  },
+  "household_chores.assign": {
+   "assignee,chore_id": 25
+  },
+  "flights.book": {
+   "flight_id,passengers": 14,
+   "flight_id,passengers,seat_class": 1
+  },
+  "chat_ott.read_chat": {
+   "chat_id": 9
+  },
+  "tasks.add": {
+   "due,title": 26,
+   "title": 6,
+   "due,priority,title": 1
+  },
+  "notes.create": {
+   "content,title": 24,
+   "content": 1
+  },
+  "calendar.create_event": {
+   "end,start,title": 10,
+   "start,title": 6,
+   "end,location,start,title": 3,
+   "location,start,title": 1
+  },
+  "contacts.update": {
+   "contact_id,phone": 5,
+   "contact_id,email": 4
+  },
+  "home_energy.get_usage": {
+   "period": 16
+  },
+  "home_automation.create_rule": {
+   "action,device_id,time,title": 15,
+   "action,device_id,time": 3
+  },
+  "robot_vacuum.start": {
+   "rooms": 17,
+   "mode,rooms": 1,
+   "mode": 1
+  },
+  "library.search": {
+   "query": 13,
+   "": 2
+  },
+  "library.reserve": {
+   "book_id": 18
+  },
+  "music.play": {
+   "track_id": 7,
+   "playlist_id": 2
+  },
+  "robot_vacuum.get_status": {
+   "": 15
+  },
+  "email.list": {
+   "": 6
+  },
+  "flights.search": {
+   "date,destination,origin": 6
+  },
+  "music.list_tracks": {
+   "": 7
+  },
+  "home_security.acknowledge_alert": {
+   "alert_id": 13
+  },
+  "calculator.calculate": {
+   "expression": 7
+  },
+  "home_security.get_camera": {
+   "location": 7
+  },
+  "food_delivery.order_history": {
+   "": 10
+  },
+  "notes.list": {
+   "": 10
+  },
+  "notes.append": {
+   "content,note_id": 5
+  },
+  "smart_home.fan_set": {
+   "device_id,power": 7
+  },
+  "fuel_price.get_price": {
+   "type": 9
+  },
+  "medication.list": {
+   "": 12
+  },
+  "ride_hailing.get_quotes": {
+   "dropoff,pickup": 2
+  },
+  "exchange_rate.get_rate": {
+   "from_currency,to_currency": 11
+  },
+  "home_automation.list_rules": {
+   "": 10
+  },
+  "home_automation.delete_rule": {
+   "rule_id": 14
+  },
+  "medication.log_taken": {
+   "schedule_id,time": 7,
+   "schedule_id": 2
+  },
+  "sms.read_recent": {
+   "contact_id": 3
+  },
+  "bill_payment.schedule_autopay": {
+   "enabled,type": 5
+  },
+  "music.add_to_playlist": {
+   "playlist_id,track_id": 2
+  },
+  "tasks.list": {
+   "": 9
+  },
+  "tv.control": {
+   "action": 3,
+   "action,volume": 1
+  },
+  "robot_vacuum.stop": {
+   "": 12
+  },
+  "reminders.list": {
+   "": 6,
+   "date": 1
+  },
+  "reminders.delete": {
+   "reminder_id": 1
+  },
+  "home_energy.set_alert": {
+   "threshold_kwh": 10
+  },
+  "phone.recent_calls": {
+   "": 3
+  },
+  "smart_home.scene_run": {
+   "scene_id": 1
+  },
+  "shopping_list.get": {
+   "": 8
+  },
+  "shopping_list.check": {
+   "item_id": 7
+  },
+  "medication.remove": {
+   "schedule_id": 4
+  },
+  "door_lock.grant_guest_code": {
+   "lock_id,valid_until": 6,
+   "label,lock_id,valid_until": 1
+  },
+  "smart_home.switch_set": {
+   "device_id,power": 4
+  },
+  "lottery.get_results": {
+   "province": 8,
+   "date,province": 3
+  },
+  "flights.my_bookings": {
+   "": 8
+  },
+  "flights.check_in": {
+   "booking_id": 6
+  },
+  "ride_hailing.get_ride": {
+   "": 5
+  },
+  "ride_hailing.cancel": {
+   "ride_id": 6
+  },
+  "lottery.check_ticket": {
+   "date,number,province": 13
+  },
+  "appliances.stop": {
+   "appliance_id": 5
+  },
+  "news.save": {
+   "article_id": 6
+  },
+  "email.archive": {
+   "action,email_id": 7
+  },
+  "maps.save_place": {
+   "label,place_id": 8
+  },
+  "tasks.complete": {
+   "task_id": 12
+  },
+  "alarm.list": {
+   "": 4
+  },
+  "tv.record": {
+   "program_id": 5
+  },
+  "shopping_list.remove": {
+   "item_id": 4
+  },
+  "music.control": {
+   "action,volume": 3
+  },
+  "exchange_rate.convert": {
+   "amount,from_currency,to_currency": 10
+  },
+  "chat_ott.call": {
+   "chat_id,video": 2,
+   "chat_id": 1
+  },
+  "flights.cancel": {
+   "booking_id": 4
+  },
+  "news.headlines": {
+   "topic": 4
+  },
+  "email.read": {
+   "email_id": 5
+  },
+  "chat_ott.send_location": {
+   "chat_id": 4
+  },
+  "home_security.arm": {
+   "mode": 2
+  },
+  "banking.list_transactions": {
+   "": 2,
+   "account_id": 1
+  },
+  "reminders.complete": {
+   "reminder_id": 1
+  },
+  "food_delivery.cancel_order": {
+   "order_id": 3
+  },
+  "email.reply": {
+   "body,email_id": 2
+  },
+  "ewallet.pay_qr": {
+   "amount,merchant_id": 2
+  },
+  "banking.open_savings": {
+   "amount,from_account_id,term_months": 4
+  },
+  "email.send": {
+   "body,cc,subject,to": 1,
+   "body,subject,to": 1
+  },
+  "alarm.delete": {
+   "alarm_id": 1
+  }
+ },
+ "ask": {
+  "hoi_ID|da_read_truoc": 93,
+  "hoi_gia_tri|co_call_truoc": 30,
+  "hoi_gia_tri|hoi_ngay": 24,
+  "hoi_ID|ID_lien_quan_trong_history": 16,
+  "hoi_ID|khong_read": 1
+ }
+}

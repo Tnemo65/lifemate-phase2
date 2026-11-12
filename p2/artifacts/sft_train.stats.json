@@ -1,0 +1,16 @@
+{
+ "splits": [
+  "train"
+ ],
+ "n": 1127,
+ "dropped_too_long": [],
+ "tokens_total": 6274107,
+ "len_p50": 5452,
+ "len_p95": 8188,
+ "len_max": 9483,
+ "target_tokens_total": 94073,
+ "target_p50": 81,
+ "target_max": 229,
+ "mean_len": 5567.1,
+ "sha256": "9f6765949adced1761720b1cbd426c32fd2e8cf5cd3637648d44c5dc84430b56"
+}

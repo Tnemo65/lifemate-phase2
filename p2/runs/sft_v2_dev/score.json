@@ -1,0 +1,15 @@
+{
+ "model": "sft_v2",
+ "split": "dev",
+ "gpu": "NVIDIA A10G",
+ "prefix_cache": false,
+ "max_seqs": 8,
+ "n": 209,
+ "score": 54.11,
+ "load_s": 105.9,
+ "run_s": 622.8,
+ "avg_s_per_sample_batched": 2.98,
+ "too_long": 0,
+ "max_prompt_tokens": 9579,
+ "gen_calls": 7
+}

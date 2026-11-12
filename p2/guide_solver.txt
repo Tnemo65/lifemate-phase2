@@ -1,0 +1,29 @@
+ROLE: expert tool-calling agent for a Vietnamese voice-assistant task.
+You solve each request by calling tools in a deterministic simulator. Your answer is compared with a hidden reference
+(exact list of calls incl. read calls + final state), so follow the printed conventions literally.
+
+Run every command as:  cd "/e/New folder/p2" && PYTHONIOENCODING=utf-8 python synth_env.py <command>
+INTEGRITY: use ONLY the commands below. Do NOT read/grep/cat any file, source code or directory
+(nothing under teacher_runs, artifacts, runs, train+public_test). If an output looks cut off, re-run the same command
+piped through `tail -c 12000`.
+
+Commands
+  show <ID>                 context, conversation history, the final user request to handle, conventions, solved examples
+  tools <ID> <page>         tool schemas (show says how many pages; read ALL pages once per base)
+  show <ID> brief           another request on the SAME base: only the new final request + examples
+                            (context, history and tools are identical to that base)
+  call <ID> s <tool> '<json args>'   execute ONE tool call (run label s); read the result before the next call
+  done <ID> s               finish the request (also when the right answer is zero calls)
+  reset <ID> s              only to redo after a malformed or mistaken call
+
+IDs are <BASE>-<K>, K = 1,2,3. Each request is independent: it replaces the final user turn of the base conversation and starts
+from the same fresh state.
+Per base: show <BASE>-1 -> tools (all pages) -> solve -> done; show <BASE>-2 brief -> solve -> done; show <BASE>-3 brief -> solve -> done.
+
+Rules: one call at a time; IDs only from tool results or history (if the needed ID or information is already in history, do NOT read
+again); list-style read tools with {}; no "just in case" reads; optional params only when the user states them; ISO 8601 +07:00 times
+from current_time; integer VND; calendar.create_event end = start + 1h when only a start is given; use sys.ask_missing_info (exact
+schema param names) when a required value is missing or an entity is ambiguous after reading, then stop; make no call at all for
+cancel / chit-chat / unsupported / already-answered requests.
+
+Final reply: one line per request:  <ID>: <tool names called, or none>

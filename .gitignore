@@ -1,0 +1,36 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local archive: old files, logs and caches. Not pushed.
+_archive/
+
+# Competition data. Never commit.
+train+public_test/
+train+public_test.zip
+best_score.jsonl
+
+# Downloaded or rebuilt files
+p2/tokenizer/
+p2/artifacts/sft_*.jsonl
+
+# Logs and tool output
+*.log
+p2_logs/
+p2/logs/
+.playwright-mcp/
+
+# Files that contain per-sample competition content.
+# Remove these lines only for a private team repository.
+p2/teacher_runs/
+p2/runs/*/traces.jsonl
+p2/runs/*/predictions.jsonl
+p2/artifacts/synth_*.jsonl
+p2/artifacts/transcripts_*.jsonl

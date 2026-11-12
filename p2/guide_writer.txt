@@ -1,0 +1,43 @@
+ROLE: data WRITER for a Vietnamese voice-assistant tool-calling dataset.
+For each BASE you write 3 NEW user requests (Vietnamese, spoken style) and execute the intended correct answer in a deterministic simulator.
+Another agent will later solve your requests blind; a request is kept only if their answer equals yours exactly (same calls incl. read calls, same final state). So every request must have ONE unambiguous correct answer under the conventions.
+
+Run every command as:  cd "/e/New folder/p2" && PYTHONIOENCODING=utf-8 python synth_env.py <command>
+INTEGRITY: use ONLY the commands below. Do NOT read/grep/cat any file, source code or directory.
+If an output looks cut off, re-run the same command piped through `tail -c 12000`.
+
+Commands
+  card <BASE>                      context, history, a sample final user turn (STYLE + LENGTH reference only), conventions,
+                                   solved examples, the real data in the user's apps, and the 3 request TYPES to write (Câu 1..3)
+  tools <BASE> <page>              tool schemas (the card says how many pages; read ALL pages)
+  call <BASE>-1 x <tool> '<json>'  optional scratch exploration, READ tools only (run label x)
+  write <BASE> <K> '<request>'     save request K (1..3). No single quotes inside the text. If it prints "CHƯA LƯU", rewrite longer.
+  call <BASE>-<K> w <tool> '<json args>'   execute ONE call of the intended answer (run label w; fresh state per K)
+  done <BASE>-<K> w                finish request K (also when the answer is zero calls)
+  reset <BASE>-<K> w               redo K from scratch after a wrong call
+
+Per base: card -> tools (all pages) -> for K = 1,2,3: write, execute with run w, done.
+
+Executing the answer: follow the conventions section EXACTLY — which read calls precede writes; list-style read tools with {};
+IDs only from tool results or history (if the ID is already in history do NOT read again); ISO 8601 +07:00 times from current_time;
+integer VND; optional params only when the request states them; calendar.create_event end = start + 1h when only a start is given;
+sys.ask_missing_info is the last call, then stop. Never include a call the conventions do not require.
+
+Writing rules
+- Same speaker voice as the user turns shown (pronouns, dialect, numbers spoken in words if they speak that way). Natural spoken
+  Vietnamese like transcribed speech. No IDs, no tool names.
+- LENGTH and richness like the sample final turn: add everyday context / reasons the way this user talks (the card gives the minimum
+  length). Do NOT add extra intents beyond the assigned type.
+- The request continues the SAME conversation (earlier turns already happened). Its intent must differ from the sample final turn and
+  from your other two requests.
+- Ground it in the real data shown. The assigned type states exactly how many WRITE actions the answer must contain — respect it.
+- A2 (ambiguous entity): verify with a read that >= 2 entities really match and nothing in the request or history singles one out.
+- A1 (missing required parameter): the missing value must not be inferable from request, context or history.
+- E3 (conditional): the condition must be checkable by a read tool on the real data; follow the assigned outcome (true / false).
+- E4 (criterion / several objects): the selected set must be unique from the real data (no ties, data really contains the criterion).
+- O3: ask for something no installed tool can do.  O4: ask again for information already present in history.
+- Obey any "KHÔNG dùng các app" line in the card.
+- If an assigned type is impossible for this base, write the closest feasible request of the same family (LÀM / HỎI LẠI / RỖNG)
+  with the same number of write actions.
+
+Final reply: one line per request:  <BASE>-<K> [type]: <request text> => <tool names called, or none>

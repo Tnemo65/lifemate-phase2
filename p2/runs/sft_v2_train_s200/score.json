@@ -1,0 +1,15 @@
+{
+ "model": "sft_v2",
+ "split": "train_s200",
+ "gpu": "NVIDIA A10",
+ "prefix_cache": false,
+ "max_seqs": 8,
+ "n": 202,
+ "score": 78.36,
+ "load_s": 83.0,
+ "run_s": 638.0,
+ "avg_s_per_sample_batched": 3.16,
+ "too_long": 0,
+ "max_prompt_tokens": 9153,
+ "gen_calls": 8
+}

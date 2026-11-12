@@ -1,0 +1,15 @@
+{
+ "model": "base",
+ "split": "dev",
+ "gpu": "NVIDIA A10",
+ "prefix_cache": false,
+ "max_seqs": 8,
+ "n": 209,
+ "score": 27.16,
+ "load_s": 86.2,
+ "run_s": 607.8,
+ "avg_s_per_sample_batched": 2.91,
+ "too_long": 0,
+ "max_prompt_tokens": 9316,
+ "gen_calls": 10
+}
